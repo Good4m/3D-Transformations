@@ -9,99 +9,101 @@ using System.Text;
 
 namespace asgn5v1
 {
-	/// <summary>
-	/// Summary description for Transformer.
-	/// </summary>
-	public class Transformer : System.Windows.Forms.Form
-	{
-		private System.ComponentModel.IContainer components;
-		//private bool GetNewData();
+    /// <summary>
+    /// Summary description for Transformer.
+    /// </summary>
+    public class Transformer : System.Windows.Forms.Form
+    {
+        private System.ComponentModel.IContainer components;
+        //private bool GetNewData();
 
-		// basic data for Transformer
+        // basic data for Transformer
 
-		int numpts = 0;
-		int numlines = 0;
-		bool gooddata = false;		
-		double[,] vertices;
-		double[,] scrnpts;
-		double[,] ctrans = new double[4,4];  //your main transformation matrix
-		private System.Windows.Forms.ImageList tbimages;
-		private System.Windows.Forms.ToolBar toolBar1;
-		private System.Windows.Forms.ToolBarButton transleftbtn;
-		private System.Windows.Forms.ToolBarButton transrightbtn;
-		private System.Windows.Forms.ToolBarButton transupbtn;
-		private System.Windows.Forms.ToolBarButton transdownbtn;
-		private System.Windows.Forms.ToolBarButton toolBarButton1;
-		private System.Windows.Forms.ToolBarButton scaleupbtn;
-		private System.Windows.Forms.ToolBarButton scaledownbtn;
-		private System.Windows.Forms.ToolBarButton toolBarButton2;
-		private System.Windows.Forms.ToolBarButton rotxby1btn;
-		private System.Windows.Forms.ToolBarButton rotyby1btn;
-		private System.Windows.Forms.ToolBarButton rotzby1btn;
-		private System.Windows.Forms.ToolBarButton toolBarButton3;
-		private System.Windows.Forms.ToolBarButton rotxbtn;
-		private System.Windows.Forms.ToolBarButton rotybtn;
-		private System.Windows.Forms.ToolBarButton rotzbtn;
-		private System.Windows.Forms.ToolBarButton toolBarButton4;
-		private System.Windows.Forms.ToolBarButton shearrightbtn;
-		private System.Windows.Forms.ToolBarButton shearleftbtn;
-		private System.Windows.Forms.ToolBarButton toolBarButton5;
-		private System.Windows.Forms.ToolBarButton resetbtn;
-		private System.Windows.Forms.ToolBarButton exitbtn;
-		int[,] lines;
+        int numpts = 0;
+        int numlines = 0;
+        bool gooddata = false;
+        double[,] vertices, originalVertices;
+        double[,] scrnpts;
+        double[,] ctrans = new double[4, 4];  //your main transformation matrix
+        Timer timer = new Timer();
 
-		public Transformer()
-		{
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
+        private System.Windows.Forms.ImageList tbimages;
+        private System.Windows.Forms.ToolBar toolBar1;
+        private System.Windows.Forms.ToolBarButton transleftbtn;
+        private System.Windows.Forms.ToolBarButton transrightbtn;
+        private System.Windows.Forms.ToolBarButton transupbtn;
+        private System.Windows.Forms.ToolBarButton transdownbtn;
+        private System.Windows.Forms.ToolBarButton toolBarButton1;
+        private System.Windows.Forms.ToolBarButton scaleupbtn;
+        private System.Windows.Forms.ToolBarButton scaledownbtn;
+        private System.Windows.Forms.ToolBarButton toolBarButton2;
+        private System.Windows.Forms.ToolBarButton rotxby1btn;
+        private System.Windows.Forms.ToolBarButton rotyby1btn;
+        private System.Windows.Forms.ToolBarButton rotzby1btn;
+        private System.Windows.Forms.ToolBarButton toolBarButton3;
+        private System.Windows.Forms.ToolBarButton rotxbtn;
+        private System.Windows.Forms.ToolBarButton rotybtn;
+        private System.Windows.Forms.ToolBarButton rotzbtn;
+        private System.Windows.Forms.ToolBarButton toolBarButton4;
+        private System.Windows.Forms.ToolBarButton shearrightbtn;
+        private System.Windows.Forms.ToolBarButton shearleftbtn;
+        private System.Windows.Forms.ToolBarButton toolBarButton5;
+        private System.Windows.Forms.ToolBarButton resetbtn;
+        private System.Windows.Forms.ToolBarButton exitbtn;
+        int[,] lines;
 
-			//
-			// TODO: Add any constructor code after InitializeComponent call
-			//
-			this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-			this.SetStyle(ControlStyles.UserPaint, true);
-			this.SetStyle(ControlStyles.DoubleBuffer, true);
-			Text = "COMP 4560:  Assignment 5 (A00866713) (Jeffrey Schweigler)";
-			ResizeRedraw = true;
-			BackColor = Color.Black;
-			MenuItem miNewDat = new MenuItem("New &Data...",
-				new EventHandler(MenuNewDataOnClick));
-			MenuItem miExit = new MenuItem("E&xit", 
-				new EventHandler(MenuFileExitOnClick));
-			MenuItem miDash = new MenuItem("-");
-			MenuItem miFile = new MenuItem("&File",
-				new MenuItem[] {miNewDat, miDash, miExit});
-			MenuItem miAbout = new MenuItem("&About",
-				new EventHandler(MenuAboutOnClick));
-			Menu = new MainMenu(new MenuItem[] {miFile, miAbout});
+        public Transformer()
+        {
+            //
+            // Required for Windows Form Designer support
+            //
+            InitializeComponent();
 
-			
-		}
+            //
+            // TODO: Add any constructor code after InitializeComponent call
+            //
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            this.SetStyle(ControlStyles.UserPaint, true);
+            this.SetStyle(ControlStyles.DoubleBuffer, true);
+            Text = "COMP 4560:  Assignment 5 (A00866713) (Jeffrey Schweigler)";
+            ResizeRedraw = true;
+            BackColor = Color.Black;
+            MenuItem miNewDat = new MenuItem("New &Data...",
+                new EventHandler(MenuNewDataOnClick));
+            MenuItem miExit = new MenuItem("E&xit",
+                new EventHandler(MenuFileExitOnClick));
+            MenuItem miDash = new MenuItem("-");
+            MenuItem miFile = new MenuItem("&File",
+                new MenuItem[] { miNewDat, miDash, miExit });
+            MenuItem miAbout = new MenuItem("&About",
+                new EventHandler(MenuAboutOnClick));
+            Menu = new MainMenu(new MenuItem[] { miFile, miAbout });
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if (components != null) 
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
 
-		#region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        }
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Transformer));
             this.tbimages = new System.Windows.Forms.ImageList(this.components);
@@ -316,24 +318,24 @@ namespace asgn5v1
             this.ResumeLayout(false);
             this.PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
-		[STAThread]
-		static void Main() 
-		{
-			Application.Run(new Transformer());
-		}
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.Run(new Transformer());
+        }
 
-		protected override void OnPaint(PaintEventArgs pea)
-		{
-			Graphics grfx = pea.Graphics;
+        protected override void OnPaint(PaintEventArgs pea)
+        {
+            Graphics grfx = pea.Graphics;
             Pen pen = new Pen(Color.White, 3);
-			double temp;
-			int k;
+            double temp;
+            int k;
 
             if (gooddata)
             {
@@ -361,270 +363,254 @@ namespace asgn5v1
 
 
             }
-		}
-
-		void MenuNewDataOnClick(object obj, EventArgs ea)
-		{
-			//MessageBox.Show("New Data item clicked.");
-			gooddata = GetNewData();
-			RestoreInitialImage();			
-		}
-
-		void MenuFileExitOnClick(object obj, EventArgs ea)
-		{
-			Close();
-		}
-
-		void MenuAboutOnClick(object obj, EventArgs ea)
-		{
-			AboutDialogBox dlg = new AboutDialogBox();
-			dlg.ShowDialog();
-		}
-
-		void RestoreInitialImage()
-		{
-			Invalidate();
-		} // end of RestoreInitialImage
-
-		bool GetNewData()
-		{
-			string strinputfile,text;
-			ArrayList coorddata = new ArrayList();
-			ArrayList linesdata = new ArrayList();
-			OpenFileDialog opendlg = new OpenFileDialog();
-			opendlg.Title = "Choose File with Coordinates of Vertices";
-			if (opendlg.ShowDialog() == DialogResult.OK)
-			{
-				strinputfile=opendlg.FileName;				
-				FileInfo coordfile = new FileInfo(strinputfile);
-				StreamReader reader = coordfile.OpenText();
-				do
-				{
-					text = reader.ReadLine();
-					if (text != null) coorddata.Add(text);
-				} while (text != null);
-				reader.Close();
-				DecodeCoords(coorddata);
-			}
-			else
-			{
-				MessageBox.Show("***Failed to Open Coordinates File***");
-				return false;
-			}
-            
-			opendlg.Title = "Choose File with Data Specifying Lines";
-			if (opendlg.ShowDialog() == DialogResult.OK)
-			{
-				strinputfile=opendlg.FileName;
-				FileInfo linesfile = new FileInfo(strinputfile);
-				StreamReader reader = linesfile.OpenText();
-				do
-				{
-					text = reader.ReadLine();
-					if (text != null) linesdata.Add(text);
-				} while (text != null);
-				reader.Close();
-				DecodeLines(linesdata);
-			}
-			else
-			{
-				MessageBox.Show("***Failed to Open Line Data File***");
-				return false;
-			}
-			scrnpts = new double[numpts,4];
-			setIdentity(ctrans,4,4);  //initialize transformation matrix to identity
-			return true;
-		} // end of GetNewData
-
-		void DecodeCoords(ArrayList coorddata)
-		{
-			// This may allocate slightly more rows than necessary
-			vertices = new double[coorddata.Count,4];
-			numpts = 0;
-			string [] text = null;
-			for (int i = 0; i < coorddata.Count; i++)
-			{
-				text = coorddata[i].ToString().Split(' ',',');
-				vertices[numpts,0] = double.Parse(text[0]);
-				if (vertices[numpts,0] < 0.0d)
-                    break;
-				vertices[numpts,1] = -double.Parse(text[1]);
-				vertices[numpts,2] = double.Parse(text[2]);
-				vertices[numpts,3] = 1.0d;
-				numpts++;						
-			}
-            // Translate everything to center screen
-            vertices = Transformations.Translate(vertices, Width/2, Height/2, 0);
         }
 
-		void DecodeLines(ArrayList linesdata)
-		{
-			//this may allocate slightly more rows that necessary
-			lines = new int[linesdata.Count,2];
-			numlines = 0;
-			string [] text = null;
-			for (int i = 0; i < linesdata.Count; i++)
-			{
-				text = linesdata[i].ToString().Split(' ',',');
-				lines[numlines,0]=int.Parse(text[0]);
-				if (lines[numlines,0] < 0) break;
-				lines[numlines,1]=int.Parse(text[1]);
-				numlines++;						
-			}
-		} // end of DecodeLines
-
-		void setIdentity(double[,] A,int nrow,int ncol)
-		{
-			for (int i = 0; i < nrow;i++) 
-			{
-				for (int j = 0; j < ncol; j++) A[i,j] = 0.0d;
-				A[i,i] = 1.0d;
-			}
-		}// end of setIdentity
-
-		private void Transformer_Load(object sender, System.EventArgs e)
-		{
-			
-		}
-
-        public class Vector3
+        void MenuNewDataOnClick(object obj, EventArgs ea)
         {
-            public double X, Y, Z;
+            //MessageBox.Show("New Data item clicked.");
+            gooddata = GetNewData();
+            RestoreInitialImage();
         }
 
-        public static Vector3 GetOriginVector(double[,] matrix)
+        void MenuFileExitOnClick(object obj, EventArgs ea)
         {
-            Vector3 result = new Vector3();
+            Close();
+        }
 
-            double minX = double.MaxValue;
-            double minY = double.MaxValue;
-            double minZ = double.MaxValue;
+        void MenuAboutOnClick(object obj, EventArgs ea)
+        {
+            AboutDialogBox dlg = new AboutDialogBox();
+            dlg.ShowDialog();
+        }
 
-            double maxX = double.MinValue;
-            double maxY = double.MinValue;
-            double maxZ = double.MinValue;
-
-            for (int i = 0; i < matrix.GetLength(0); i++)
+        bool GetNewData()
+        {
+            string strinputfile, text;
+            ArrayList coorddata = new ArrayList();
+            ArrayList linesdata = new ArrayList();
+            OpenFileDialog opendlg = new OpenFileDialog();
+            opendlg.Title = "Choose File with Coordinates of Vertices";
+            if (opendlg.ShowDialog() == DialogResult.OK)
             {
-                // Min X
-                if (Math.Abs(matrix[i, 0]) < minX)
-                    minX = matrix[i, 0];
-                // Min Y
-                if (Math.Abs(matrix[i, 1]) < minY)
-                    minY = matrix[i, 1];
-                // Min Z
-                if (Math.Abs(matrix[i, 2]) < minZ)
-                    minZ = matrix[i, 2];
-
-                // Max X
-                if (Math.Abs(matrix[i, 0]) > maxX)
-                    maxX = matrix[i, 0];
-                // Max Y
-                if (Math.Abs(matrix[i, 1]) > maxY)
-                    maxY = matrix[i, 1];
-                // Max Z
-                if (Math.Abs(matrix[i, 2]) > maxZ)
-                    maxZ = matrix[i, 2];
+                strinputfile = opendlg.FileName;
+                FileInfo coordfile = new FileInfo(strinputfile);
+                StreamReader reader = coordfile.OpenText();
+                do
+                {
+                    text = reader.ReadLine();
+                    if (text != null) coorddata.Add(text);
+                } while (text != null);
+                reader.Close();
+                DecodeCoords(coorddata);
+            }
+            else
+            {
+                MessageBox.Show("***Failed to Open Coordinates File***");
+                return false;
             }
 
-            result.X = maxX - minX;
-            result.Y = maxY - minY;
-            result.Z = maxZ - minZ;
+            opendlg.Title = "Choose File with Data Specifying Lines";
+            if (opendlg.ShowDialog() == DialogResult.OK)
+            {
+                strinputfile = opendlg.FileName;
+                FileInfo linesfile = new FileInfo(strinputfile);
+                StreamReader reader = linesfile.OpenText();
+                do
+                {
+                    text = reader.ReadLine();
+                    if (text != null) linesdata.Add(text);
+                } while (text != null);
+                reader.Close();
+                DecodeLines(linesdata);
+            }
+            else
+            {
+                MessageBox.Show("***Failed to Open Line Data File***");
+                return false;
+            }
+            scrnpts = new double[numpts, 4];
+            setIdentity(ctrans, 4, 4);  //initialize transformation matrix to identity
+            return true;
+        } // end of GetNewData
 
-            return result;
+        void DecodeCoords(ArrayList coorddata)
+        {
+            // This may allocate slightly more rows than necessary
+            vertices = new double[coorddata.Count, 4];
+            numpts = 0;
+            string[] text = null;
+            for (int i = 0; i < coorddata.Count; i++)
+            {
+                text = coorddata[i].ToString().Split(' ', ',');
+                vertices[numpts, 0] = double.Parse(text[0]);
+                if (vertices[numpts, 0] < 0.0d)
+                    break;
+                vertices[numpts, 1] = -double.Parse(text[1]);
+                vertices[numpts, 2] = double.Parse(text[2]);
+                vertices[numpts, 3] = 1.0d;
+                numpts++;
+            }
+
+            // Translate everything to center screen
+            vertices = Transformations.Translate(vertices, -vertices[0, 0], -vertices[0, 1], -vertices[0, 2]);
+            vertices = Transformations.Translate(vertices, Width / 2, Height / 2, 0);
+
+            // Make note of original vertices for when resetting
+            originalVertices = vertices;
         }
 
-        private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
-		{
-			if (e.Button == transleftbtn)
-			{
-                vertices = Transformations.Translate(vertices, -1, 0, 0);
-				Refresh();
-			}
-			if (e.Button == transrightbtn) 
-			{
-                vertices = Transformations.Translate(vertices, 1, 0, 0);
-                Refresh();
-			}
-			if (e.Button == transupbtn)
-			{
-                vertices = Transformations.Translate(vertices, 0, -1, 0);
-                Refresh();
-			}
-			if(e.Button == transdownbtn)
-			{
-                vertices = Transformations.Translate(vertices, 0, 1, 0);
-                Refresh();
-			}
-			if (e.Button == scaleupbtn) 
-			{
-                Vector3 origin = GetOriginVector(vertices);
-                vertices = Transformations.Translate(vertices, -origin.X, -origin.Y, -origin.Z);
-                vertices = Transformations.Scale(vertices, 1.5, 1.5, 0);
-                vertices = Transformations.Translate(vertices, origin.X, origin.Y, origin.Z);
-                Refresh();
-			}
-			if (e.Button == scaledownbtn) 
-			{
-                vertices = Transformations.Scale(vertices, -1.5, -1.5, 0);
-                Refresh();
-			}
-			if (e.Button == rotxby1btn) 
-			{
+        void DecodeLines(ArrayList linesdata)
+        {
+            //this may allocate slightly more rows that necessary
+            lines = new int[linesdata.Count, 2];
+            numlines = 0;
+            string[] text = null;
+            for (int i = 0; i < linesdata.Count; i++)
+            {
+                text = linesdata[i].ToString().Split(' ', ',');
+                lines[numlines, 0] = int.Parse(text[0]);
+                if (lines[numlines, 0] < 0) break;
+                lines[numlines, 1] = int.Parse(text[1]);
+                numlines++;
+            }
+        } // end of DecodeLines
+
+        void setIdentity(double[,] A, int nrow, int ncol)
+        {
+            for (int i = 0; i < nrow; i++)
+            {
+                for (int j = 0; j < ncol; j++) A[i, j] = 0.0d;
+                A[i, i] = 1.0d;
+            }
+        }// end of setIdentity
+
+        private void Transformer_Load(object sender, System.EventArgs e)
+        {
+
+        }
+
+        private void MyTimer_Tick(object sender, EventArgs e)
+        {
+            MessageBox.Show("The form will now be closed.", "Time Elapsed");
+            this.Close();
+        }
+
+        private void toolBar1_ButtonClick(object sender, ToolBarButtonClickEventArgs e)
+        {
+            if (e.Button == transleftbtn)
+            {
+                vertices = Transformations.Translate(vertices, -Transformations.DEFAULT_INCREMENT, 0, 0);
                 Refresh();
             }
-			if (e.Button == rotyby1btn) 
-			{
+            if (e.Button == transrightbtn) 
+            {
+                vertices = Transformations.Translate(vertices, Transformations.DEFAULT_INCREMENT, 0, 0);
                 Refresh();
             }
-			if (e.Button == rotzby1btn) 
-			{
-                Vector3 origin = GetOriginVector(vertices);
-                vertices = Transformations.Translate(vertices, -origin.X, -origin.Y, -origin.Z);
-                vertices = Transformations.RotateZ(vertices, 0.0174533 * 20); // 0.0174533 radian = 1 degree
-                vertices = Transformations.Translate(vertices, origin.X, origin.Y, origin.Z);
+            if (e.Button == transupbtn)
+            {
+                vertices = Transformations.Translate(vertices, 0, -Transformations.DEFAULT_INCREMENT, 0);
+                Refresh();
+            }
+            if(e.Button == transdownbtn)
+            {
+                vertices = Transformations.Translate(vertices, 0, Transformations.DEFAULT_INCREMENT, 0);
+                Refresh();
+            }
+            if (e.Button == scaleupbtn) 
+            {
+                vertices = Transformations.Scale(vertices, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP);
+                Refresh();
+            }
+            if (e.Button == scaledownbtn) 
+            {
+                vertices = Transformations.Scale(vertices, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN);
+                Refresh();
+            }
+            if (e.Button == rotxby1btn) 
+            {
+                vertices = Transformations.RotateX(vertices, Transformations.DEFAULT_THETA);
+                Refresh();
+            }
+            if (e.Button == rotyby1btn) 
+            {
+                vertices = Transformations.RotateY(vertices, Transformations.DEFAULT_THETA);
+                Refresh();
+            }
+            if (e.Button == rotzby1btn) 
+            {
+                vertices = Transformations.RotateZ(vertices, Transformations.DEFAULT_THETA);
                 Refresh();
             }
 
-			if (e.Button == rotxbtn) 
-			{
-                Refresh();
-            }
-			if (e.Button == rotybtn) 
-			{
-                Refresh();
-            }
-			
-			if (e.Button == rotzbtn) 
-			{
-                //vertices = Transformations.RotateZ(vertices, 0.05);
-                Refresh();
+            if (e.Button == rotxbtn) 
+            {
+                timer.Stop();
+                timer = new Timer();
+                timer.Interval = (50);
+                timer.Tick += new EventHandler((ss, ee) => {
+                    vertices = Transformations.RotateX(vertices, Transformations.DEFAULT_THETA);
+                    Refresh();
+                });
+                timer.Start();
             }
 
-			if(e.Button == shearleftbtn)
-			{
-				Refresh();
-			}
+            if (e.Button == rotybtn) 
+            {
+                timer.Stop();
+                timer = new Timer();
+                timer.Interval = (50);
+                timer.Tick += new EventHandler((ss, ee) => {
+                    vertices = Transformations.RotateY(vertices, Transformations.DEFAULT_THETA);
+                    Refresh();
+                });
+                timer.Start();
+            }
+            
+            if (e.Button == rotzbtn) 
+            {
+                timer.Stop();
+                timer = new Timer();
+                timer.Interval = (50);
+                timer.Tick += new EventHandler((ss, ee) => {
+                    vertices = Transformations.RotateZ(vertices, Transformations.DEFAULT_THETA);
+                    Refresh();
+                });
+                timer.Start();
+            }
 
-			if (e.Button == shearrightbtn) 
-			{
-				Refresh();
-			}
+            if(e.Button == shearleftbtn)
+            {
+                vertices = Transformations.Sheer(vertices, 0.2);
+                Refresh();
+            }
 
-			if (e.Button == resetbtn)
-			{
-				RestoreInitialImage();
-			}
+            if (e.Button == shearrightbtn)
+            {
+                vertices = Transformations.Sheer(vertices, -0.2);
+                Refresh();
+            }
 
-			if(e.Button == exitbtn) 
-			{
-				Close();
-			}
+            if (e.Button == resetbtn)
+            {
+                RestoreInitialImage();
+            }
 
-		}
+            if (e.Button == exitbtn) 
+            {
+                Close();
+            }
 
-		
-	}
+        }
+
+        private void RestoreInitialImage()
+        {
+            timer.Stop();
+            vertices = originalVertices;
+            Refresh();
+        }
+
+    }
 
 	
 }
