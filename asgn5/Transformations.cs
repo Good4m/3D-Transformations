@@ -6,16 +6,23 @@ namespace asgn5v1
 {
     static class Transformations
     {
+        // Default constants
         public static double DEFAULT_INCREMENT = 10;
-        public static double DEFAULT_THETA     = 0.0174533;  // 0.0174533 radian = 1 degree
+        public static double DEFAULT_THETA     = 0.0174533;  // 0.0174533 radian == 1 degree
         public static double DEFAULT_SCALEUP   = 1.5;
         public static double DEFAULT_SCALEDOWN = 0.5;
 
+        // Matrix that holds the current transformation
         private static double[,] transformMatrix = new double[4, 4];
 
+        // For working with vectors easier and more expressive
         private struct Vector3 {
             public double X, Y, Z;
         }
+
+        // For holding origin of matrix to be transformed.
+        // This is so we can remember where to translate back to after a transformation
+        // requires us to move the origin to (0,0)
         private static Vector3 origin = new Vector3();
 
         /// <summary>
@@ -60,6 +67,14 @@ namespace asgn5v1
             return resultMatrix;
         }
 
+        /// <summary>
+        /// Translates a matrix
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
         public static double[,] Translate(double[,] matrix, double x, double y, double z)
         {
             // Get origin
@@ -97,32 +112,40 @@ namespace asgn5v1
             return matrix;
         }
 
-        public static double[,] Scale(double[,] matrix, double x, double y, double z)
+        /// <summary>
+        /// Scales a matrix
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="xFactor"></param>
+        /// <param name="yFactor"></param>
+        /// <param name="zFactor"></param>
+        /// <returns></returns>
+        public static double[,] Scale(double[,] matrix, double xFactor, double yFactor, double zFactor)
         {
             // Get origin
             origin.X = matrix[0, 0];
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
-            // Translate origin to (0,0)
-            matrix = Translate(matrix, -matrix[0, 0], -matrix[0, 1], -matrix[0, 2]);
+            // Translate origin to (0, 0)
+            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
 
             // Row 1
-            transformMatrix[0, 0] = x;
+            transformMatrix[0, 0] = xFactor;
             transformMatrix[0, 1] = 0;
             transformMatrix[0, 2] = 0;
             transformMatrix[0, 3] = 0;
 
             // Row 2
             transformMatrix[1, 0] = 0;
-            transformMatrix[1, 1] = y;
+            transformMatrix[1, 1] = yFactor;
             transformMatrix[1, 2] = 0;
             transformMatrix[1, 3] = 0;
 
             // Row 3
             transformMatrix[2, 0] = 0;
             transformMatrix[2, 1] = 0;
-            transformMatrix[2, 2] = z;
+            transformMatrix[2, 2] = zFactor;
             transformMatrix[2, 3] = 0;
 
             // Row 4
@@ -140,6 +163,12 @@ namespace asgn5v1
             return matrix;
         }
 
+        /// <summary>
+        /// Rotates matrix around X-axis
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="theta"></param>
+        /// <returns></returns>
         public static double[,] RotateX(double[,] matrix, double theta)
         {
             // Get origin
@@ -147,8 +176,8 @@ namespace asgn5v1
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
-            // Translate origin to (0,0)
-            matrix = Translate(matrix, -matrix[0, 0], -matrix[0, 1], -matrix[0, 2]);
+            // Translate origin to (0, 0)
+            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
 
             // Row 1
             transformMatrix[0, 0] = 1;
@@ -167,7 +196,7 @@ namespace asgn5v1
             transformMatrix[2, 1] = Math.Sin(theta);
             transformMatrix[2, 2] = Math.Cos(theta);
             transformMatrix[2, 3] = 0;
-            
+
             // Row 4
             transformMatrix[3, 0] = 0;
             transformMatrix[3, 1] = 0;
@@ -183,6 +212,12 @@ namespace asgn5v1
             return matrix;
         }
 
+        /// <summary>
+        /// Rotates matrix around Y-axis
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="theta"></param>
+        /// <returns></returns>
         public static double[,] RotateY(double[,] matrix, double theta)
         {
             // Get origin
@@ -190,8 +225,8 @@ namespace asgn5v1
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
-            // Translate origin to (0,0)
-            matrix = Translate(matrix, -matrix[0, 0], -matrix[0, 1], -matrix[0, 2]);
+            // Translate origin to (0, 0)
+            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
 
             // Row 1
             transformMatrix[0, 0] = Math.Cos(theta);
@@ -226,6 +261,12 @@ namespace asgn5v1
             return matrix;
         }
 
+        /// <summary>
+        /// Rotates matrix around Z-axis
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="theta"></param>
+        /// <returns></returns>
         public static double[,] RotateZ(double[,] matrix, double theta)
         {
             // Get origin
@@ -233,8 +274,8 @@ namespace asgn5v1
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
-            // Translate origin to (0,0)
-            matrix = Translate(matrix, -matrix[0, 0], -matrix[0, 1], -matrix[0, 2]);
+            // Translate origin to (0, 0)
+            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
 
             // Row 1
             transformMatrix[0, 0] = Math.Cos(theta);
@@ -269,15 +310,12 @@ namespace asgn5v1
             return matrix;
         }
 
-        public static double FindMaxY(double[,] matrix)
-        {
-            double max = 0;
-            for (int i = 1; i < matrix.GetLength(0) - 1; i++)
-                if (matrix[i, 1] > max)
-                    max = matrix[i, 1];
-            return max;
-        }
-
+        /// <summary>
+        /// Sheers matrix with respect to Y-axis
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="amount"></param>
+        /// <returns></returns>
         public static double[,] Sheer(double[,] matrix, double amount)
         {
             // Get origin
@@ -285,11 +323,11 @@ namespace asgn5v1
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
+            // Find maximum Y coordinate (the bottom of the object in this case)
             double maxY = FindMaxY(matrix);
 
             // Translate origin to (0,0)
             matrix = Translate(matrix, 0, -maxY, 0);
-
             // Row 1
             transformMatrix[0, 0] = 1;
             transformMatrix[0, 1] = 0;
@@ -322,19 +360,19 @@ namespace asgn5v1
 
             return matrix;
         }
+
+        /// <summary>
+        /// Finds maximum Y coordinate of a matrix
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double FindMaxY(double[,] matrix)
+        {
+            double max = 0;
+            for (int i = 1; i < matrix.GetLength(0) - 1; i++)
+                if (matrix[i, 1] > max)
+                    max = matrix[i, 1];
+            return max;
+        }
     }
 }
-
-
-
-
-/*
-            Console.WriteLine("Result:");
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    Console.Write(resultMatrix[r, c] + "\t");
-                }
-                Console.WriteLine();
-            }*/

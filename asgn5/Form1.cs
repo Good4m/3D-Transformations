@@ -26,6 +26,7 @@ namespace asgn5v1
         double[,] scrnpts;
         double[,] ctrans = new double[4, 4];  //your main transformation matrix
         Timer timer = new Timer();
+        bool xRotationRunning, yRotationRunning, zRotationRunning = false;
 
         private System.Windows.Forms.ImageList tbimages;
         private System.Windows.Forms.ToolBar toolBar1;
@@ -455,6 +456,9 @@ namespace asgn5v1
             vertices = Transformations.Translate(vertices, -vertices[0, 0], -vertices[0, 1], -vertices[0, 2]);
             vertices = Transformations.Translate(vertices, Width / 2, Height / 2, 0);
 
+            // Scale up
+            vertices = Transformations.Scale(vertices, 5, 5, 5);
+
             // Make note of original vertices for when resetting
             originalVertices = vertices;
         }
@@ -545,8 +549,18 @@ namespace asgn5v1
 
             if (e.Button == rotxbtn) 
             {
+                if (xRotationRunning)
+                {
+                    timer.Stop();
+                    timer = new Timer();
+                    xRotationRunning = false;
+                    return;
+                }
                 timer.Stop();
                 timer = new Timer();
+                xRotationRunning = true;
+                yRotationRunning = false;
+                zRotationRunning = false;
                 timer.Interval = (50);
                 timer.Tick += new EventHandler((ss, ee) => {
                     vertices = Transformations.RotateX(vertices, Transformations.DEFAULT_THETA);
@@ -557,8 +571,18 @@ namespace asgn5v1
 
             if (e.Button == rotybtn) 
             {
+                if (yRotationRunning)
+                {
+                    timer.Stop();
+                    timer = new Timer();
+                    yRotationRunning = false;
+                    return;
+                }
                 timer.Stop();
                 timer = new Timer();
+                xRotationRunning = false;
+                yRotationRunning = true;
+                zRotationRunning = false;
                 timer.Interval = (50);
                 timer.Tick += new EventHandler((ss, ee) => {
                     vertices = Transformations.RotateY(vertices, Transformations.DEFAULT_THETA);
@@ -569,8 +593,18 @@ namespace asgn5v1
             
             if (e.Button == rotzbtn) 
             {
+                if (zRotationRunning)
+                {
+                    timer.Stop();
+                    timer = new Timer();
+                    zRotationRunning = false;
+                    return;
+                }
                 timer.Stop();
                 timer = new Timer();
+                xRotationRunning = false;
+                yRotationRunning = false;
+                zRotationRunning = true;
                 timer.Interval = (50);
                 timer.Tick += new EventHandler((ss, ee) => {
                     vertices = Transformations.RotateZ(vertices, Transformations.DEFAULT_THETA);
