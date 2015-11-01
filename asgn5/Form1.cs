@@ -12,75 +12,70 @@ namespace asgn5v1
     /// <summary>
     /// Summary description for Transformer.
     /// </summary>
-    public class Transformer : System.Windows.Forms.Form
+    public class Transformer : Form
     {
-        private System.ComponentModel.IContainer components;
-        //private bool GetNewData();
+        #region SidebarComponenets
+        private IContainer components;
+        private ImageList tbimages;
+        private ToolBar toolBar1;
+        private ToolBarButton transleftbtn;
+        private ToolBarButton transrightbtn;
+        private ToolBarButton transupbtn;
+        private ToolBarButton transdownbtn;
+        private ToolBarButton toolBarButton1;
+        private ToolBarButton scaleupbtn;
+        private ToolBarButton scaledownbtn;
+        private ToolBarButton toolBarButton2;
+        private ToolBarButton rotxby1btn;
+        private ToolBarButton rotyby1btn;
+        private ToolBarButton rotzby1btn;
+        private ToolBarButton toolBarButton3;
+        private ToolBarButton rotxbtn;
+        private ToolBarButton rotybtn;
+        private ToolBarButton rotzbtn;
+        private ToolBarButton toolBarButton4;
+        private ToolBarButton shearrightbtn;
+        private ToolBarButton shearleftbtn;
+        private ToolBarButton toolBarButton5;
+        private ToolBarButton resetbtn;
+        private ToolBarButton exitbtn;
+        #endregion SidebarComponenets
 
-        // basic data for Transformer
+        private int  numpts   = 0;
+        private int  numlines = 0;
+        private bool gooddata = false;
+        private bool xRotationRunning, yRotationRunning, zRotationRunning = false;
 
-        int numpts = 0;
-        int numlines = 0;
-        bool gooddata = false;
-        double[,] vertices, originalVertices;
-        double[,] scrnpts;
-        double[,] ctrans = new double[4, 4];  //your main transformation matrix
-        Timer timer = new Timer();
-        bool xRotationRunning, yRotationRunning, zRotationRunning = false;
+        private double[,] vertices;
+        private double[,] originalVertices;
+        private int[,] lines;
 
-        private System.Windows.Forms.ImageList tbimages;
-        private System.Windows.Forms.ToolBar toolBar1;
-        private System.Windows.Forms.ToolBarButton transleftbtn;
-        private System.Windows.Forms.ToolBarButton transrightbtn;
-        private System.Windows.Forms.ToolBarButton transupbtn;
-        private System.Windows.Forms.ToolBarButton transdownbtn;
-        private System.Windows.Forms.ToolBarButton toolBarButton1;
-        private System.Windows.Forms.ToolBarButton scaleupbtn;
-        private System.Windows.Forms.ToolBarButton scaledownbtn;
-        private System.Windows.Forms.ToolBarButton toolBarButton2;
-        private System.Windows.Forms.ToolBarButton rotxby1btn;
-        private System.Windows.Forms.ToolBarButton rotyby1btn;
-        private System.Windows.Forms.ToolBarButton rotzby1btn;
-        private System.Windows.Forms.ToolBarButton toolBarButton3;
-        private System.Windows.Forms.ToolBarButton rotxbtn;
-        private System.Windows.Forms.ToolBarButton rotybtn;
-        private System.Windows.Forms.ToolBarButton rotzbtn;
-        private System.Windows.Forms.ToolBarButton toolBarButton4;
-        private System.Windows.Forms.ToolBarButton shearrightbtn;
-        private System.Windows.Forms.ToolBarButton shearleftbtn;
-        private System.Windows.Forms.ToolBarButton toolBarButton5;
-        private System.Windows.Forms.ToolBarButton resetbtn;
-        private System.Windows.Forms.ToolBarButton exitbtn;
-        int[,] lines;
+        private Timer timer = new Timer();
+
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.Run(new Transformer());
+        }
 
         public Transformer()
         {
-            //
-            // Required for Windows Form Designer support
-            //
             InitializeComponent();
-
-            //
-            // TODO: Add any constructor code after InitializeComponent call
-            //
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            this.SetStyle(ControlStyles.UserPaint, true);
-            this.SetStyle(ControlStyles.DoubleBuffer, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            SetStyle(ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.DoubleBuffer, true);
             Text = "COMP 4560:  Assignment 5 (A00866713) (Jeffrey Schweigler)";
             ResizeRedraw = true;
             BackColor = Color.Black;
-            MenuItem miNewDat = new MenuItem("New &Data...",
-                new EventHandler(MenuNewDataOnClick));
-            MenuItem miExit = new MenuItem("E&xit",
-                new EventHandler(MenuFileExitOnClick));
+            MenuItem miNewDat = new MenuItem("New &Data...", new EventHandler(MenuNewDataOnClick));
+            MenuItem miExit = new MenuItem("E&xit", new EventHandler(MenuFileExitOnClick));
             MenuItem miDash = new MenuItem("-");
-            MenuItem miFile = new MenuItem("&File",
-                new MenuItem[] { miNewDat, miDash, miExit });
-            MenuItem miAbout = new MenuItem("&About",
-                new EventHandler(MenuAboutOnClick));
+            MenuItem miFile = new MenuItem("&File", new MenuItem[] { miNewDat, miDash, miExit });
+            MenuItem miAbout = new MenuItem("&About", new EventHandler(MenuAboutOnClick));
             Menu = new MainMenu(new MenuItem[] { miFile, miAbout });
-
-
         }
 
         /// <summary>
@@ -322,47 +317,16 @@ namespace asgn5v1
         }
         #endregion
 
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            Application.Run(new Transformer());
-        }
-
         protected override void OnPaint(PaintEventArgs pea)
         {
-            Graphics grfx = pea.Graphics;
             Pen pen = new Pen(Color.White, 3);
-            double temp;
-            int k;
-
             if (gooddata)
             {
-                //create the screen coordinates:
-                // scrnpts = vertices*ctrans
-
-                for (int i = 0; i < numpts; i++)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        temp = 0.0d;
-                        for (k = 0; k < 4; k++)
-                            temp += vertices[i, k] * ctrans[k, j];
-                        scrnpts[i, j] = temp;
-                    }
-                }
-
-                //now draw the lines
-
                 for (int i = 0; i < numlines; i++)
                 {
-                    grfx.DrawLine(pen, (int)scrnpts[lines[i, 0], 0], (int)scrnpts[lines[i, 0], 1],
-                        (int)scrnpts[lines[i, 1], 0], (int)scrnpts[lines[i, 1], 1]);
+                    pea.Graphics.DrawLine(pen, (int)vertices[lines[i, 0], 0], (int)vertices[lines[i, 0], 1],
+                        (int)vertices[lines[i, 1], 0], (int)vertices[lines[i, 1], 1]);
                 }
-
-
             }
         }
 
@@ -429,10 +393,9 @@ namespace asgn5v1
                 MessageBox.Show("***Failed to Open Line Data File***");
                 return false;
             }
-            scrnpts = new double[numpts, 4];
-            setIdentity(ctrans, 4, 4);  //initialize transformation matrix to identity
+ 
             return true;
-        } // end of GetNewData
+        }
 
         void DecodeCoords(ArrayList coorddata)
         {
@@ -452,12 +415,11 @@ namespace asgn5v1
                 numpts++;
             }
 
-            // Translate everything to center screen
-            vertices = Transformations.Translate(vertices, -vertices[0, 0], -vertices[0, 1], -vertices[0, 2]);
-            vertices = Transformations.Translate(vertices, Width / 2, Height / 2, 0);
-
-            // Scale up
-            vertices = Transformations.Scale(vertices, 5, 5, 5);
+            // Center object and scale up
+            double scaleAmount = 5;
+            double width  = ClientSize.Width / 2;
+            double height = ClientSize.Height / 2;
+            vertices = Transformations.CenterObjectAndScaleUp(vertices, width, height, scaleAmount);
 
             // Make note of original vertices for when resetting
             originalVertices = vertices;
@@ -477,16 +439,7 @@ namespace asgn5v1
                 lines[numlines, 1] = int.Parse(text[1]);
                 numlines++;
             }
-        } // end of DecodeLines
-
-        void setIdentity(double[,] A, int nrow, int ncol)
-        {
-            for (int i = 0; i < nrow; i++)
-            {
-                for (int j = 0; j < ncol; j++) A[i, j] = 0.0d;
-                A[i, i] = 1.0d;
-            }
-        }// end of setIdentity
+        }
 
         private void Transformer_Load(object sender, System.EventArgs e)
         {
@@ -503,52 +456,62 @@ namespace asgn5v1
         {
             if (e.Button == transleftbtn)
             {
+                Transformations.ResetTransform();
                 vertices = Transformations.Translate(vertices, -Transformations.DEFAULT_INCREMENT, 0, 0);
                 Refresh();
             }
             if (e.Button == transrightbtn) 
             {
+                Transformations.ResetTransform();
                 vertices = Transformations.Translate(vertices, Transformations.DEFAULT_INCREMENT, 0, 0);
                 Refresh();
             }
             if (e.Button == transupbtn)
             {
+                Transformations.ResetTransform();
                 vertices = Transformations.Translate(vertices, 0, -Transformations.DEFAULT_INCREMENT, 0);
                 Refresh();
             }
             if(e.Button == transdownbtn)
             {
+                Transformations.ResetTransform();
                 vertices = Transformations.Translate(vertices, 0, Transformations.DEFAULT_INCREMENT, 0);
                 Refresh();
             }
             if (e.Button == scaleupbtn) 
             {
-                vertices = Transformations.Scale(vertices, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP);
+                Transformations.ResetTransform();
+                vertices = Transformations.UniformScale(vertices, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP);
                 Refresh();
             }
             if (e.Button == scaledownbtn) 
             {
-                vertices = Transformations.Scale(vertices, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN);
+                Transformations.ResetTransform();
+                vertices = Transformations.UniformScale(vertices, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN);
                 Refresh();
             }
             if (e.Button == rotxby1btn) 
             {
+                Transformations.ResetTransform();
                 vertices = Transformations.RotateX(vertices, Transformations.DEFAULT_THETA);
                 Refresh();
             }
             if (e.Button == rotyby1btn) 
             {
+                Transformations.ResetTransform();
                 vertices = Transformations.RotateY(vertices, Transformations.DEFAULT_THETA);
                 Refresh();
             }
             if (e.Button == rotzby1btn) 
             {
+                Transformations.ResetTransform();
                 vertices = Transformations.RotateZ(vertices, Transformations.DEFAULT_THETA);
                 Refresh();
             }
 
             if (e.Button == rotxbtn) 
             {
+                Transformations.ResetTransform();
                 if (xRotationRunning)
                 {
                     timer.Stop();
@@ -571,6 +534,7 @@ namespace asgn5v1
 
             if (e.Button == rotybtn) 
             {
+                Transformations.ResetTransform();
                 if (yRotationRunning)
                 {
                     timer.Stop();
@@ -593,6 +557,7 @@ namespace asgn5v1
             
             if (e.Button == rotzbtn) 
             {
+                Transformations.ResetTransform();
                 if (zRotationRunning)
                 {
                     timer.Stop();
@@ -615,18 +580,21 @@ namespace asgn5v1
 
             if(e.Button == shearleftbtn)
             {
-                vertices = Transformations.Sheer(vertices, 0.2);
+                Transformations.ResetTransform();
+                vertices = Transformations.ShearX(vertices, 0.2);
                 Refresh();
             }
 
             if (e.Button == shearrightbtn)
             {
-                vertices = Transformations.Sheer(vertices, -0.2);
+                Transformations.ResetTransform();
+                vertices = Transformations.ShearX(vertices, -0.2);
                 Refresh();
             }
 
             if (e.Button == resetbtn)
             {
+                Transformations.ResetTransform();
                 RestoreInitialImage();
             }
 
@@ -643,8 +611,5 @@ namespace asgn5v1
             vertices = originalVertices;
             Refresh();
         }
-
     }
-
-	
 }

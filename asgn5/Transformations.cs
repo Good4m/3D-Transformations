@@ -4,20 +4,61 @@ using System.Text;
 
 namespace asgn5v1
 {
+    /// <summary>
+    /// Applies transformations to matrices
+    /// Author: Jeffrey Schweigler
+    /// </summary>
     static class Transformations
     {
         // Default constants
         public static double DEFAULT_INCREMENT = 10;
-        public static double DEFAULT_THETA     = 0.0174533;  // 0.0174533 radian == 1 degree
+        public static double DEFAULT_THETA     = 0.0174533;
         public static double DEFAULT_SCALEUP   = 1.5;
-        public static double DEFAULT_SCALEDOWN = 0.5;
+        public static double DEFAULT_SCALEDOWN = 1.5;
 
-        // Matrix that holds the current transformation
+        // Matrix that holds the current (net) transformation
         private static double[,] transformMatrix = new double[4, 4];
 
         // For working with vectors easier and more expressive
         private struct Vector3 {
             public double X, Y, Z;
+        }
+
+        /// <summary>
+        /// Sets a matrix to the identity matrix
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="nrow"></param>
+        /// <param name="ncol"></param>
+        private static void SetIdentity(double[,] A, int nrow, int ncol)
+        {
+            for (int i = 0; i < nrow; i++)
+            {
+                for (int j = 0; j < ncol; j++)
+                {
+                    A[i, j] = 0;
+                    A[i, i] = 1;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the transformMatrix to the identity matrix
+        /// </summary>
+        public static void ResetTransform()
+        {
+            SetIdentity(transformMatrix, 4, 4);
+        }
+
+        /// <summary>
+        /// Creates and initializes double[,] matrix to the identity matrix
+        /// </summary>
+        /// <returns></returns>
+        private static double[,] CreateMatrix()
+        {
+            double[,] d = new double[4, 4];
+            SetIdentity(d, 4, 4);
+            return d;
         }
 
         // For holding origin of matrix to be transformed.
@@ -66,6 +107,32 @@ namespace asgn5v1
             }
             return resultMatrix;
         }
+       
+        /// <summary>
+        /// Initial placement of object in center of screen
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
+        public static double[,] CenterObjectAndScaleUp(double[,] matrix, double centerWidth, double centerHeight, double scaleAmount)
+        {
+            // Initialize transformation matrix
+            ResetTransform();
+
+            // Translate origin to (0, 0)
+            transformMatrix = Translate(transformMatrix, -matrix[0, 0], -matrix[0, 1], -matrix[0, 2]);
+
+            // Scale up
+            transformMatrix = UniformScale(transformMatrix, scaleAmount, scaleAmount, scaleAmount);
+
+            // Translate to center of screen
+            transformMatrix = Translate(transformMatrix, centerWidth, centerHeight, 0);
+
+            // Multiply matrix with net transformation matrix and return
+            return Multiply(matrix, transformMatrix);
+        }
 
         /// <summary>
         /// Translates a matrix
@@ -77,39 +144,11 @@ namespace asgn5v1
         /// <returns></returns>
         public static double[,] Translate(double[,] matrix, double x, double y, double z)
         {
-            // Get origin
-            origin.X = matrix[0, 0];
-            origin.Y = matrix[0, 1];
-            origin.Z = matrix[0, 2];
-
-            // Row 1
-            transformMatrix[0, 0] = 1;
-            transformMatrix[0, 1] = 0;
-            transformMatrix[0, 2] = 0;
-            transformMatrix[0, 3] = 0;
-
-            // Row 2
-            transformMatrix[1, 0] = 0;
-            transformMatrix[1, 1] = 1;
-            transformMatrix[1, 2] = 0;
-            transformMatrix[1, 3] = 0;
-
-            // Row 3
-            transformMatrix[2, 0] = 0;
-            transformMatrix[2, 1] = 0;
-            transformMatrix[2, 2] = 1;
-            transformMatrix[2, 3] = 0;
-
-            // Row 4
-            transformMatrix[3, 0] = x;
-            transformMatrix[3, 1] = y;
-            transformMatrix[3, 2] = z;
-            transformMatrix[3, 3] = 1;
-           
-            // Multiply matrix with transformation matrix
-            matrix = Multiply(matrix, transformMatrix);
-
-            return matrix;
+            double[,] trans = CreateMatrix();
+            trans[3, 0] = x;
+            trans[3, 1] = y;
+            trans[3, 2] = z;
+            return Multiply(matrix, trans);
         }
 
         /// <summary>
@@ -120,47 +159,35 @@ namespace asgn5v1
         /// <param name="yFactor"></param>
         /// <param name="zFactor"></param>
         /// <returns></returns>
-        public static double[,] Scale(double[,] matrix, double xFactor, double yFactor, double zFactor)
+        public static double[,] UniformScale(double[,] matrix, double xFactor, double yFactor, double zFactor)
         {
+            double[,] trans1 = CreateMatrix();
+            double[,] scale  = CreateMatrix();
+            double[,] trans2 = CreateMatrix();
+            double[,] net    = CreateMatrix();
+
             // Get origin
             origin.X = matrix[0, 0];
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
             // Translate origin to (0, 0)
-            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
+            trans1 = Translate(trans1, -origin.X, -origin.Y, -origin.Z);
 
-            // Row 1
-            transformMatrix[0, 0] = xFactor;
-            transformMatrix[0, 1] = 0;
-            transformMatrix[0, 2] = 0;
-            transformMatrix[0, 3] = 0;
-
-            // Row 2
-            transformMatrix[1, 0] = 0;
-            transformMatrix[1, 1] = yFactor;
-            transformMatrix[1, 2] = 0;
-            transformMatrix[1, 3] = 0;
-
-            // Row 3
-            transformMatrix[2, 0] = 0;
-            transformMatrix[2, 1] = 0;
-            transformMatrix[2, 2] = zFactor;
-            transformMatrix[2, 3] = 0;
-
-            // Row 4
-            transformMatrix[3, 0] = 0;
-            transformMatrix[3, 1] = 0;
-            transformMatrix[3, 2] = 0;
-            transformMatrix[3, 3] = 1;
-
-            // Multiply matrix with transformation matrix
-            matrix = Multiply(matrix, transformMatrix);
+            // Scale
+            scale[0, 0] = xFactor;
+            scale[1, 1] = yFactor;
+            scale[2, 2] = zFactor;
 
             // Translate back
-            matrix = Translate(matrix, origin.X, origin.Y, origin.Z);
+            trans2 = Translate(trans2, origin.X, origin.Y, origin.Z);
 
-            return matrix;
+            // Create net matrix from transformation matrices
+            net = Multiply(net, trans1);
+            net = Multiply(net, scale);
+            net = Multiply(net, trans2);
+
+            return Multiply(matrix, net);
         }
 
         /// <summary>
@@ -171,45 +198,34 @@ namespace asgn5v1
         /// <returns></returns>
         public static double[,] RotateX(double[,] matrix, double theta)
         {
+            double[,] trans1 = CreateMatrix();
+            double[,] rotate = CreateMatrix();
+            double[,] trans2 = CreateMatrix();
+            double[,] net = CreateMatrix();
+
             // Get origin
             origin.X = matrix[0, 0];
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
             // Translate origin to (0, 0)
-            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
+            trans1 = Translate(trans1, -origin.X, -origin.Y, -origin.Z);
 
-            // Row 1
-            transformMatrix[0, 0] = 1;
-            transformMatrix[0, 1] = 0;
-            transformMatrix[0, 2] = 0;
-            transformMatrix[0, 3] = 0;
-            
-            // Row 2
-            transformMatrix[1, 0] = 0;
-            transformMatrix[1, 1] = Math.Cos(theta);
-            transformMatrix[1, 2] = -Math.Sin(theta);
-            transformMatrix[1, 3] = 0;
-            
-            // Row 3
-            transformMatrix[2, 0] = 0;
-            transformMatrix[2, 1] = Math.Sin(theta);
-            transformMatrix[2, 2] = Math.Cos(theta);
-            transformMatrix[2, 3] = 0;
-
-            // Row 4
-            transformMatrix[3, 0] = 0;
-            transformMatrix[3, 1] = 0;
-            transformMatrix[3, 2] = 0;
-            transformMatrix[3, 3] = 1;
-
-            // Multiply matrix with transformation matrix
-            matrix = Multiply(matrix, transformMatrix);
+            // Set variables
+            rotate[1, 1] = Math.Cos(theta);
+            rotate[1, 2] = -Math.Sin(theta);
+            rotate[2, 1] = Math.Sin(theta);
+            rotate[2, 2] = Math.Cos(theta);
 
             // Translate back
-            matrix = Translate(matrix, origin.X, origin.Y, origin.Z);
+            trans2 = Translate(trans2, origin.X, origin.Y, origin.Z);
 
-            return matrix;
+            // Create net matrix from transformation matrices
+            net = Multiply(net, trans1);
+            net = Multiply(net, rotate);
+            net = Multiply(net, trans2);
+
+            return Multiply(matrix, net);
         }
 
         /// <summary>
@@ -220,45 +236,34 @@ namespace asgn5v1
         /// <returns></returns>
         public static double[,] RotateY(double[,] matrix, double theta)
         {
+            double[,] trans1 = CreateMatrix();
+            double[,] rotate = CreateMatrix();
+            double[,] trans2 = CreateMatrix();
+            double[,] net = CreateMatrix();
+
             // Get origin
             origin.X = matrix[0, 0];
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
             // Translate origin to (0, 0)
-            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
+            trans1 = Translate(trans1, -origin.X, -origin.Y, -origin.Z);
 
-            // Row 1
-            transformMatrix[0, 0] = Math.Cos(theta);
-            transformMatrix[0, 1] = 0;
-            transformMatrix[0, 2] = Math.Sin(theta);
-            transformMatrix[0, 3] = 0;
-
-            // Row 2
-            transformMatrix[1, 0] = 0;
-            transformMatrix[1, 1] = 1;
-            transformMatrix[1, 2] = 0;
-            transformMatrix[1, 3] = 0;
-
-            // Row 3
-            transformMatrix[2, 0] = -Math.Sin(theta);
-            transformMatrix[2, 1] = 0;
-            transformMatrix[2, 2] = Math.Cos(theta);
-            transformMatrix[2, 3] = 0;
-
-            // Row 4
-            transformMatrix[3, 0] = 0;
-            transformMatrix[3, 1] = 0;
-            transformMatrix[3, 2] = 0;
-            transformMatrix[3, 3] = 1;
-
-            // Multiply matrix with transformation matrix
-            matrix = Multiply(matrix, transformMatrix);
+            // Set variables
+            rotate[0, 0] = Math.Cos(theta);
+            rotate[0, 2] = Math.Sin(theta);
+            rotate[2, 0] = -Math.Sin(theta);
+            rotate[2, 2] = Math.Cos(theta);
 
             // Translate back
-            matrix = Translate(matrix, origin.X, origin.Y, origin.Z);
+            trans2 = Translate(trans2, origin.X, origin.Y, origin.Z);
 
-            return matrix;
+            // Create net matrix from transformation matrices
+            net = Multiply(net, trans1);
+            net = Multiply(net, rotate);
+            net = Multiply(net, trans2);
+
+            return Multiply(matrix, net);
         }
 
         /// <summary>
@@ -269,55 +274,49 @@ namespace asgn5v1
         /// <returns></returns>
         public static double[,] RotateZ(double[,] matrix, double theta)
         {
+            double[,] trans1 = CreateMatrix();
+            double[,] rotate = CreateMatrix();
+            double[,] trans2 = CreateMatrix();
+            double[,] net = CreateMatrix();
+
             // Get origin
             origin.X = matrix[0, 0];
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
             // Translate origin to (0, 0)
-            matrix = Translate(matrix, -origin.X, -origin.Y, -origin.Z);
+            trans1 = Translate(trans1, -origin.X, -origin.Y, -origin.Z);
 
-            // Row 1
-            transformMatrix[0, 0] = Math.Cos(theta);
-            transformMatrix[0, 1] = -Math.Sin(theta);
-            transformMatrix[0, 2] = 0;
-            transformMatrix[0, 3] = 0;
-
-            // Row 2
-            transformMatrix[1, 0] = Math.Sin(theta);
-            transformMatrix[1, 1] = Math.Cos(theta);
-            transformMatrix[1, 2] = 0;
-            transformMatrix[1, 3] = 0;
-
-            // Row 3
-            transformMatrix[2, 0] = 0;
-            transformMatrix[2, 1] = 0;
-            transformMatrix[2, 2] = 1;
-            transformMatrix[2, 3] = 0;
-
-            // Row 4
-            transformMatrix[3, 0] = 0;
-            transformMatrix[3, 1] = 0;
-            transformMatrix[3, 2] = 0;
-            transformMatrix[3, 3] = 1;
-
-            // Multiply matrix with transformation matrix
-            matrix = Multiply(matrix, transformMatrix);
+            // Set variables
+            rotate[0, 0] = Math.Cos(theta);
+            rotate[0, 1] = -Math.Sin(theta);
+            rotate[1, 0] = Math.Sin(theta);
+            rotate[1, 1] = Math.Cos(theta);
 
             // Translate back
-            matrix = Translate(matrix, origin.X, origin.Y, origin.Z);
+            trans2 = Translate(trans2, origin.X, origin.Y, origin.Z);
 
-            return matrix;
+            // Create net matrix from transformation matrices
+            net = Multiply(net, trans1);
+            net = Multiply(net, rotate);
+            net = Multiply(net, trans2);
+
+            return Multiply(matrix, net);
         }
 
         /// <summary>
-        /// Sheers matrix with respect to Y-axis
+        /// Shears matrix with respect to Y-axis
         /// </summary>
         /// <param name="matrix"></param>
         /// <param name="amount"></param>
         /// <returns></returns>
-        public static double[,] Sheer(double[,] matrix, double amount)
+        public static double[,] ShearX(double[,] matrix, double amount)
         {
+            double[,] trans1 = CreateMatrix();
+            double[,] shear  = CreateMatrix();
+            double[,] trans2 = CreateMatrix();
+            double[,] net = CreateMatrix();
+
             // Get origin
             origin.X = matrix[0, 0];
             origin.Y = matrix[0, 1];
@@ -326,39 +325,22 @@ namespace asgn5v1
             // Find maximum Y coordinate (the bottom of the object in this case)
             double maxY = FindMaxY(matrix);
 
-            // Translate origin to (0,0)
-            matrix = Translate(matrix, 0, -maxY, 0);
-            // Row 1
-            transformMatrix[0, 0] = 1;
-            transformMatrix[0, 1] = 0;
-            transformMatrix[0, 2] = 0;
-            transformMatrix[0, 3] = 0;
+            // Translate origin to (0, 0)
+            trans1 = Translate(trans1, -origin.X, -maxY, -origin.Z);
 
-            // Row 2
-            transformMatrix[1, 0] = amount;
-            transformMatrix[1, 1] = 1;
-            transformMatrix[1, 2] = amount;
-            transformMatrix[1, 3] = 0;
-
-            // Row 3
-            transformMatrix[2, 0] = 0;
-            transformMatrix[2, 1] = 0;
-            transformMatrix[2, 2] = 1;
-            transformMatrix[2, 3] = 0;
-
-            // Row 4
-            transformMatrix[3, 0] = 0;
-            transformMatrix[3, 1] = 0;
-            transformMatrix[3, 2] = 0;
-            transformMatrix[3, 3] = 1;
-
-            // Multiply matrix with transformation matrix
-            matrix = Multiply(matrix, transformMatrix);
+            // Set variables
+            shear[1, 0] = amount;
+            shear[1, 2] = amount;
 
             // Translate back
-            matrix = Translate(matrix, 0, maxY, 0);
+            trans2 = Translate(trans2, origin.X, maxY, origin.Z);
 
-            return matrix;
+            // Create net matrix from transformation matrices
+            net = Multiply(net, trans1);
+            net = Multiply(net, shear);
+            net = Multiply(net, trans2);
+
+            return Multiply(matrix, net);
         }
 
         /// <summary>
