@@ -319,7 +319,28 @@ namespace asgn5v1
 
         protected override void OnPaint(PaintEventArgs pea)
         {
+            /*
             Pen pen = new Pen(Color.White, 3);
+            if (gooddata)
+            {
+                for (int i = 0; i < numlines; i++)
+                {
+                    pea.Graphics.DrawLine(pen, (int)vertices[lines[i, 0], 0], (int)vertices[lines[i, 0], 1],
+                        (int)vertices[lines[i, 1], 0], (int)vertices[lines[i, 1], 1]);
+                }
+            }
+            */
+
+            Pen pen = new Pen(Color.White, 6);
+            if (gooddata)
+            {
+                for (int i = 0; i < numlines; i++)
+                {
+                    pea.Graphics.DrawLine(pen, (int)vertices[lines[i, 0], 0], (int)vertices[lines[i, 0], 1],
+                        (int)vertices[lines[i, 1], 0], (int)vertices[lines[i, 1], 1]);
+                }
+            }
+            pen = new Pen(Color.Black, 4);
             if (gooddata)
             {
                 for (int i = 0; i < numlines; i++)
@@ -334,6 +355,21 @@ namespace asgn5v1
         {
             //MessageBox.Show("New Data item clicked.");
             gooddata = GetNewData();
+
+            // Make note of original vertices for when resetting
+            originalVertices = vertices;
+
+            // Center object and scale up
+            double centerWidth = ClientSize.Width / 2;
+            double centerHeight = ClientSize.Height / 2;
+            double scaleAmount = centerHeight / (Transformations.FindMaxY(vertices) - Transformations.FindMinY(vertices));
+
+            vertices = Transformations.CenterObjectAndScaleUp(vertices, centerWidth, centerHeight, scaleAmount);
+
+            Invalidate();
+            Update();
+            Refresh();
+            Application.DoEvents();
         }
 
         void MenuFileExitOnClick(object obj, EventArgs ea)
@@ -413,18 +449,6 @@ namespace asgn5v1
                 vertices[numpts, 3] = 1.0d;
                 numpts++;
             }
-
-            // Make note of original vertices for when resetting
-            originalVertices = vertices;
-
-            // Center object and scale up
-            double centerWidth  = ClientSize.Width / 2;
-            double centerHeight = ClientSize.Height / 2;
-            double scaleAmount  = centerHeight / (Transformations.FindMaxY(vertices) - Transformations.FindMinY(vertices));
-
-            vertices = Transformations.CenterObjectAndScaleUp(vertices, centerWidth, centerHeight, scaleAmount);
-
-            Refresh();
         }
 
         void DecodeLines(ArrayList linesdata)
