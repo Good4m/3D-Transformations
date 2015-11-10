@@ -334,7 +334,6 @@ namespace asgn5v1
         {
             //MessageBox.Show("New Data item clicked.");
             gooddata = GetNewData();
-            RestoreInitialImage();
         }
 
         void MenuFileExitOnClick(object obj, EventArgs ea)
@@ -415,14 +414,17 @@ namespace asgn5v1
                 numpts++;
             }
 
-            // Center object and scale up
-            double scaleAmount = 5;
-            double width  = ClientSize.Width / 2;
-            double height = ClientSize.Height / 2;
-            vertices = Transformations.CenterObjectAndScaleUp(vertices, width, height, scaleAmount);
-
             // Make note of original vertices for when resetting
             originalVertices = vertices;
+
+            // Center object and scale up
+            double centerWidth  = ClientSize.Width / 2;
+            double centerHeight = ClientSize.Height / 2;
+            double scaleAmount  = centerHeight / (Transformations.FindMaxY(vertices) - Transformations.FindMinY(vertices));
+
+            vertices = Transformations.CenterObjectAndScaleUp(vertices, centerWidth, centerHeight, scaleAmount);
+
+            Refresh();
         }
 
         void DecodeLines(ArrayList linesdata)
@@ -607,9 +609,19 @@ namespace asgn5v1
 
         private void RestoreInitialImage()
         {
+            /*
             timer.Stop();
             vertices = originalVertices;
+
+            // Center object and scale up
+            double centerWidth  = ClientSize.Width  / 2;
+            double centerHeight = ClientSize.Height / 2;
+            double scaleAmount  = centerHeight / (Transformations.FindMaxY(vertices) - Transformations.FindMinY(vertices));
+
+            vertices = Transformations.CenterObjectAndScaleUp(vertices, centerWidth, centerHeight, scaleAmount);
+
             Refresh();
+            */
         }
     }
 }

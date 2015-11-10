@@ -13,8 +13,8 @@ namespace asgn5v1
         // Default constants
         public static double DEFAULT_INCREMENT = 10;
         public static double DEFAULT_THETA     = 0.0174533;
-        public static double DEFAULT_SCALEUP   = 1.5;
-        public static double DEFAULT_SCALEDOWN = 1.5;
+        public static double DEFAULT_SCALEUP   = 1.1;
+        public static double DEFAULT_SCALEDOWN = 0.9;
 
         // Matrix that holds the current (net) transformation
         private static double[,] transformMatrix = new double[4, 4];
@@ -121,14 +121,16 @@ namespace asgn5v1
             // Initialize transformation matrix
             ResetTransform();
 
+            
+
             // Translate origin to (0, 0)
             transformMatrix = Translate(transformMatrix, -matrix[0, 0], -matrix[0, 1], -matrix[0, 2]);
 
-            // Scale up
+            // Scale
             transformMatrix = UniformScale(transformMatrix, scaleAmount, scaleAmount, scaleAmount);
 
             // Translate to center of screen
-            transformMatrix = Translate(transformMatrix, centerWidth, centerHeight, 0);
+            transformMatrix = Translate(transformMatrix, centerWidth, centerHeight, matrix[0, 2]);
 
             // Multiply matrix with net transformation matrix and return
             return Multiply(matrix, transformMatrix);
@@ -201,7 +203,7 @@ namespace asgn5v1
             double[,] trans1 = CreateMatrix();
             double[,] rotate = CreateMatrix();
             double[,] trans2 = CreateMatrix();
-            double[,] net = CreateMatrix();
+            double[,] net    = CreateMatrix();
 
             // Get origin
             origin.X = matrix[0, 0];
@@ -239,7 +241,7 @@ namespace asgn5v1
             double[,] trans1 = CreateMatrix();
             double[,] rotate = CreateMatrix();
             double[,] trans2 = CreateMatrix();
-            double[,] net = CreateMatrix();
+            double[,] net    = CreateMatrix();
 
             // Get origin
             origin.X = matrix[0, 0];
@@ -277,7 +279,7 @@ namespace asgn5v1
             double[,] trans1 = CreateMatrix();
             double[,] rotate = CreateMatrix();
             double[,] trans2 = CreateMatrix();
-            double[,] net = CreateMatrix();
+            double[,] net    = CreateMatrix();
 
             // Get origin
             origin.X = matrix[0, 0];
@@ -315,7 +317,7 @@ namespace asgn5v1
             double[,] trans1 = CreateMatrix();
             double[,] shear  = CreateMatrix();
             double[,] trans2 = CreateMatrix();
-            double[,] net = CreateMatrix();
+            double[,] net    = CreateMatrix();
 
             // Get origin
             origin.X = matrix[0, 0];
@@ -341,6 +343,20 @@ namespace asgn5v1
             net = Multiply(net, trans2);
 
             return Multiply(matrix, net);
+        }
+
+        /// <summary>
+        /// Finds minimum Y coordinate of a matrix
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double FindMinY(double[,] matrix)
+        {
+            double min = double.MaxValue;
+            for (int i = 1; i < matrix.GetLength(0) - 1; i++)
+                if (matrix[i, 1] < min)
+                    min = matrix[i, 1];
+            return min;
         }
 
         /// <summary>
