@@ -319,28 +319,7 @@ namespace asgn5v1
 
         protected override void OnPaint(PaintEventArgs pea)
         {
-            /*
             Pen pen = new Pen(Color.White, 3);
-            if (gooddata)
-            {
-                for (int i = 0; i < numlines; i++)
-                {
-                    pea.Graphics.DrawLine(pen, (int)vertices[lines[i, 0], 0], (int)vertices[lines[i, 0], 1],
-                        (int)vertices[lines[i, 1], 0], (int)vertices[lines[i, 1], 1]);
-                }
-            }
-            */
-
-            Pen pen = new Pen(Color.White, 6);
-            if (gooddata)
-            {
-                for (int i = 0; i < numlines; i++)
-                {
-                    pea.Graphics.DrawLine(pen, (int)vertices[lines[i, 0], 0], (int)vertices[lines[i, 0], 1],
-                        (int)vertices[lines[i, 1], 0], (int)vertices[lines[i, 1], 1]);
-                }
-            }
-            pen = new Pen(Color.Black, 4);
             if (gooddata)
             {
                 for (int i = 0; i < numlines; i++)
@@ -633,7 +612,6 @@ namespace asgn5v1
 
         private void RestoreInitialImage()
         {
-            /*
             timer.Stop();
             vertices = originalVertices;
 
@@ -645,7 +623,6 @@ namespace asgn5v1
             vertices = Transformations.CenterObjectAndScaleUp(vertices, centerWidth, centerHeight, scaleAmount);
 
             Refresh();
-            */
         }
     }
 }

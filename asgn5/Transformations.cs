@@ -16,6 +16,8 @@ namespace asgn5v1
         public static double DEFAULT_SCALEUP   = 1.1;
         public static double DEFAULT_SCALEDOWN = 0.9;
 
+        public static double transY = 0;
+
         // Matrix that holds the current (net) transformation
         private static double[,] transformMatrix = new double[4, 4];
 
@@ -105,6 +107,9 @@ namespace asgn5v1
                     }
                 }
             }
+
+            //transY += resultMatrix[3, 1];
+
             return resultMatrix;
         }
        
@@ -121,8 +126,6 @@ namespace asgn5v1
             // Initialize transformation matrix
             ResetTransform();
 
-            
-
             // Translate origin to (0, 0)
             transformMatrix = Translate(transformMatrix, -matrix[0, 0], -matrix[0, 1], -matrix[0, 2]);
 
@@ -131,6 +134,11 @@ namespace asgn5v1
 
             // Translate to center of screen
             transformMatrix = Translate(transformMatrix, centerWidth, centerHeight, matrix[0, 2]);
+
+            transY = 0;
+            transY += -matrix[0, 1];
+            transY *= scaleAmount;
+            transY += centerHeight;
 
             // Multiply matrix with net transformation matrix and return
             return Multiply(matrix, transformMatrix);
@@ -328,14 +336,14 @@ namespace asgn5v1
             double maxY = FindMaxY(matrix);
 
             // Translate origin to (0, 0)
-            trans1 = Translate(trans1, -origin.X, -maxY, -origin.Z);
+            trans1 = Translate(trans1, -origin.X, -transY, -origin.Z);
 
             // Set variables
             shear[1, 0] = amount;
             shear[1, 2] = amount;
 
             // Translate back
-            trans2 = Translate(trans2, origin.X, maxY, origin.Z);
+            trans2 = Translate(trans2, origin.X, transY, origin.Z);
 
             // Create net matrix from transformation matrices
             net = Multiply(net, trans1);
