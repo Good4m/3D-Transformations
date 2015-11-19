@@ -332,9 +332,6 @@ namespace asgn5v1
             origin.Y = matrix[0, 1];
             origin.Z = matrix[0, 2];
 
-            // Find maximum Y coordinate (the bottom of the object in this case)
-            double maxY = FindMaxY(matrix);
-
             // Translate origin to (0, 0)
             trans1 = Translate(trans1, -origin.X, -transY, -origin.Z);
 

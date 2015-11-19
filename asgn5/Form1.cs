@@ -463,6 +463,7 @@ namespace asgn5v1
             {
                 Transformations.ResetTransform();
                 vertices = Transformations.Translate(vertices, -Transformations.DEFAULT_INCREMENT, 0, 0);
+
                 Refresh();
             }
             if (e.Button == transrightbtn) 
@@ -475,24 +476,36 @@ namespace asgn5v1
             {
                 Transformations.ResetTransform();
                 vertices = Transformations.Translate(vertices, 0, -Transformations.DEFAULT_INCREMENT, 0);
+                Transformations.transY += -Transformations.DEFAULT_INCREMENT;
                 Refresh();
             }
             if(e.Button == transdownbtn)
             {
                 Transformations.ResetTransform();
                 vertices = Transformations.Translate(vertices, 0, Transformations.DEFAULT_INCREMENT, 0);
+                Transformations.transY += Transformations.DEFAULT_INCREMENT;
                 Refresh();
             }
             if (e.Button == scaleupbtn) 
             {
                 Transformations.ResetTransform();
                 vertices = Transformations.UniformScale(vertices, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP, Transformations.DEFAULT_SCALEUP);
+                double i = 0;
+                i = vertices[0, 1];
+                Transformations.transY -= i;
+                Transformations.transY *= Transformations.DEFAULT_SCALEUP;
+                Transformations.transY += i;
                 Refresh();
             }
             if (e.Button == scaledownbtn) 
             {
                 Transformations.ResetTransform();
                 vertices = Transformations.UniformScale(vertices, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN, Transformations.DEFAULT_SCALEDOWN);
+                double i = 0;
+                i = vertices[0, 1];
+                Transformations.transY -= i;
+                Transformations.transY *= Transformations.DEFAULT_SCALEDOWN;
+                Transformations.transY += i;
                 Refresh();
             }
             if (e.Button == rotxby1btn) 
